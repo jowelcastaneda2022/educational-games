@@ -1,14 +1,16 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 
 const PageHeader = ({ text, path }) => {
   return (
     <div className="page-header">
-      <Link className="back-link" to={path ? path : "/"}>
-        <span className="circle" aria-hidden="true">
-          <span className="icon arrow"></span>
-        </span>
-        <span className="text">{text}</span>
+      <Link href={path ? path : "/eduquest-game"}>
+        <div className="back-link">
+          <span className="circle" aria-hidden="true">
+            <span className="icon arrow"></span>
+          </span>
+          <span className="text">{text}</span>
+        </div>
       </Link>
     </div>
   );
