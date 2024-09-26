@@ -1,30 +1,39 @@
-import React, { useContext, useEffect } from "react";
-import PageLoader from "../../../components/PageHeader";
-import MathGame from "../../../components/PageHeader";
-import PageHeader from "../../../components/PageHeader";
-import { fetchMathData } from "../../../mutations/math";
-import { StoreContext } from "../../../store";
-import { finishMathGame, retryMathGame } from "../../../store/actions";
-import ResultPage from "../ResultPage/index";
+import React, { useEffect } from 'react';
+import { PageLoader, MathGame, PageHeader } from '../../../components';
+import { fetchMathData } from '../../../mutations';
+import ResultPage from '../ResultPage/index'
+import { store, updateStore } from '../../../unistore'
+import { connect } from 'unistore/react';
 
-function MathPage() {
-  const { state, dispatch } = useContext(StoreContext);
-  const { gameData, gameFinished, finalScore } = state.math;
+function MathPage({ math }) {
+  const { gameData, gameFinished, finalScore } = math;
 
   useEffect(() => {
-    fetchMathData(dispatch);
-  }, [dispatch]);
+    fetchMathData();
+  }, []);
 
   const handleFinish = (score) => {
-    finishMathGame(dispatch, score);
+    const { math } = store.getState();
+    updateStore({
+      math: {
+        ...math,
+        finalScore: score,
+        gameFinished: true,
+      }
+    })
   };
 
   const handleRetry = () => {
-    retryMathGame(dispatch);
-    fetchMathData(dispatch);
+    const { math } = store.getState();
+    updateStore({
+      math: {
+        ...math,
+        finalScore: 0,
+        gameFinished: false,
+      }
+    })
+    fetchMathData();
   };
-  console.error("gameData", state);
-  console.error("MathPage gameData", JSON.stringify(gameData, null, 2));
 
   if (gameData.fetching) {
     return <PageLoader />;
@@ -34,6 +43,7 @@ function MathPage() {
     return <div>Failed to load data. Please try again later.</div>;
   }
 
+
   return (
     <div className="math-page">
       <PageHeader text="Number Crunching Game" />
@@ -42,14 +52,12 @@ function MathPage() {
       ) : (
         <ResultPage
           score={finalScore}
-          totalQuestions={gameData.data.reduce(
-            (total, round) => total + round.questions.length,
-            0
-          )}
+          totalQuestions={gameData.data.reduce((total, round) => total + round.questions.length, 0)}
           totalRounds={gameData.data.length}
           onRetry={handleRetry}
           scoringMode="perQuestion"
         />
+
       )}
 
       <ul className="circles">
@@ -61,4 +69,4 @@ function MathPage() {
   );
 }
 
-export default MathPage;
+export default connect('math')(MathPage);
